@@ -1,0 +1,16 @@
+# Gradle
+/.gradle
+/build
+/*/build
+
+# Intellij IDEA
+/*.iml
+/*/*.iml
+/.idea
+
+local.properties
+signing.properties
+
+.DS_Store
+*~
+*.pyc
