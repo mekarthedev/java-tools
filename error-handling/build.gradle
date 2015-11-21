@@ -37,11 +37,11 @@ uploadArchives {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: ossrhUsername, password: null)
             }
 
             snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: ossrhUsername, password: null)
             }
 
             pom.project {
@@ -70,6 +70,30 @@ uploadArchives {
                     }
                 }
             }
+        }
+    }
+}
+
+def readSecureProperty(String propertyName, String propertyDescription) {
+    def value = null
+    if (project.hasProperty(propertyName)) {
+        value = project."$propertyName"
+    } else if (null != System.console()) {
+        value = new String(System.console().readPassword("\n\$ $propertyDescription: "))
+    }
+    return value
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.any { it instanceof Sign }) {
+        allprojects {
+            ext."signing.password" = readSecureProperty("signing.password", "PGP Keyring Password")
+            def deployer = uploadArchives.repositories.mavenDeployer
+            System.out.println(deployer.repository.getAuthentication())
+
+            def ossrhPassword = readSecureProperty("ossrhPassword", "OSSRH Password")
+            deployer.repository.authentication.password = ossrhPassword
+            deployer.snapshotRepository.authentication.password = ossrhPassword
         }
     }
 }
