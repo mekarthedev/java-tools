@@ -3,15 +3,13 @@ version '0.1.0'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
-
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    compile project(':error-handling')
-    compile project(':json-tools')
+    compile 'me.mekarthedev.tools:error-handling:0.1.0'
+    compile project(':gson-utils')
     compile 'com.google.code.gson:gson:2.3.1'
 
     testCompile 'junit:junit:4.12'
