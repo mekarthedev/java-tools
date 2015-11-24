@@ -1,9 +1,9 @@
 group 'me.mekarthedev.tools'
 version '0.1.0'
+description 'A set of tools for simlifying error handling implementations.'
 
 apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'signing'
+apply from: mavenPublishingRules
 
 repositories {
     mavenCentral()
@@ -14,94 +14,4 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-library:1.3'
     testCompile 'org.mockito:mockito-core:1.10.19'
     testCompile 'com.google.guava:guava:18.0'
-}
-
-javadoc {
-    source = sourceSets.main.allJava
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-signing {
-    sign configurations.archives
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: null)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: null)
-            }
-
-            pom.project {
-                name 'Error Handling'
-                packaging 'jar'
-                description 'A set of tools for simlifying error handling implementations.'
-                url 'https://github.com/mekarthedev/java-tools'
-
-                scm {
-                    url 'scm:git@github.com:mekarthedev/java-tools.git'
-                    connection 'scm:git@github.com:mekarthedev/java-tools.git'
-                    developerConnection 'scm:git@github.com:mekarthedev/java-tools.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'mekarthedev'
-                        name 'Viacheslav Makarov'
-                    }
-                }
-            }
-        }
-    }
-}
-
-def readSecureProperty(String propertyName, String propertyDescription) {
-    def value = null
-    if (project.hasProperty(propertyName)) {
-        value = project."$propertyName"
-    } else if (null != System.console()) {
-        value = new String(System.console().readPassword("\n\$ $propertyDescription: "))
-    }
-    return value
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    if (taskGraph.allTasks.any { it instanceof Sign }) {
-        allprojects {
-            ext."signing.password" = readSecureProperty("signing.password", "PGP Keyring Password")
-            def deployer = uploadArchives.repositories.mavenDeployer
-            System.out.println(deployer.repository.getAuthentication())
-
-            def ossrhPassword = readSecureProperty("ossrhPassword", "OSSRH Password")
-            deployer.repository.authentication.password = ossrhPassword
-            deployer.snapshotRepository.authentication.password = ossrhPassword
-        }
-    }
 }

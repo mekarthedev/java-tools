@@ -1,0 +1,103 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: null, password: null)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: null, password: null)
+            }
+
+            pom.project {
+                name project.name
+                description project.description
+                url 'https://github.com/mekarthedev/java-tools'
+
+                packaging 'jar'
+
+                scm {
+                    url 'scm:git@github.com:mekarthedev/java-tools.git'
+                    connection 'scm:git@github.com:mekarthedev/java-tools.git'
+                    developerConnection 'scm:git@github.com:mekarthedev/java-tools.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'mekarthedev'
+                        name 'Viacheslav Makarov'
+                    }
+                }
+            }
+        }
+    }
+}
+
+def askSensitiveProp(String propertyName, Map args) {
+    def value = null
+    if (project.hasProperty(propertyName)) {
+        value = project."$propertyName"
+    } else if (null != System.console()) {
+        if (args.isSecret) {
+            value = new String(System.console().readPassword("\n\$ $args.descr: "))
+        } else {
+            value = new String(System.console().readLine("\n\$ $args.descr: "))
+        }
+    }
+    return value
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (tasks.any { it instanceof Sign && it in taskGraph.allTasks }) {
+        ext."signing.keyId" = askSensitiveProp("signing.keyId", [ descr: "PGP Key ID" ])
+        ext."signing.secretKeyRingFile" = askSensitiveProp("signing.secretKeyRingFile", [ descr: "PGP Keyring Path" ])
+        ext."signing.password" = askSensitiveProp("signing.password", [ descr: "PGP Keyring Passphrase", isSecret: true ])
+    }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (tasks.any { it instanceof Upload && it in taskGraph.allTasks }) {
+        def deployer = uploadArchives.repositories.mavenDeployer
+        def ossrhUsername = askSensitiveProp("ossrh.username", [ descr: "OSSRH Username" ])
+        def ossrhPassword = askSensitiveProp("ossrh.password", [ descr: "OSSRH Password", isSecret: true ])
+        deployer.repository.authentication.userName = ossrhUsername
+        deployer.repository.authentication.password = ossrhPassword
+        deployer.snapshotRepository.authentication.userName = ossrhUsername
+        deployer.snapshotRepository.authentication.password = ossrhPassword
+    }
+}
