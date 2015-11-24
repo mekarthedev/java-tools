@@ -1,7 +1,9 @@
 group 'me.mekarthedev.tools'
 version '0.1.0'
+description 'Various utilities, add-ons and adapters for the Gson json parsing library.'
 
 apply plugin: 'java'
+apply from: mavenPublishingRules
 
 repositories {
     mavenCentral()

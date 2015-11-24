@@ -5,6 +5,10 @@ import com.google.gson.stream.JsonToken;
 
 import java.io.IOException;
 
+/**
+ * A simple decorator of a JsonReader instance. Allows hooking into the parsing process
+ * by passing an overriden decorated reader to the target adapter.
+ */
 public class JsonReaderDecorator extends JsonReader {
     private final JsonReader _reader;
 
