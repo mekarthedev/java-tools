@@ -8,7 +8,8 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.bind.JsonTreeWriter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import me.mekarthedev.tools.json.gson.JsonReaderDecorator;
+import me.mekarthedev.tools.json.gson.ObjectTargetedJsonWriter;
+import me.mekarthedev.tools.json.gson.ObjectWatchingJsonReader;
 import me.mekarthedev.tools.patch.Patch;
 
 import java.io.IOException;
@@ -48,21 +49,20 @@ public class PatchTypeAdapter<Data> extends TypeAdapter<Patch<Data>> {
             }
         }
 
-        boolean serializeNulls = out.getSerializeNulls();
-        out.setSerializeNulls(true);
-        _gson.getAdapter(JsonObject.class).write(out, tree);
-        out.setSerializeNulls(serializeNulls);
+        // If a data field changed to null the null should be serialized.
+        // This is the whole point of this adapter.
+        ObjectTargetedJsonWriter patchWriter = new ObjectTargetedJsonWriter(out);
+        patchWriter.setTargetedSerializeNulls(true);
+        _gson.getAdapter(JsonObject.class).write(patchWriter, tree);
     }
 
     @Override
     public Patch<Data> read(JsonReader in) throws IOException {
         final Set<String> receivedJsonProperties = new HashSet<>();
-        JsonReader watchingReader = new JsonReaderDecorator(in) {
+        JsonReader watchingReader = new ObjectWatchingJsonReader(in) {
             @Override
-            public String nextName() throws IOException {
-                String name = super.nextName();
-                receivedJsonProperties.add(name);
-                return name;
+            protected void onNextName(String foundName) {
+                receivedJsonProperties.add(foundName);
             }
         };
 
