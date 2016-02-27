@@ -25,3 +25,11 @@ Required OSSRH authentication properties:
 ossrh.username
 ossrh.password
 ```
+
+The properties that are not explicitly set will be prompted during publishing.
+
+## Uploading
+
+* Run `gradle :{module-name}:uploadArchives` where module-name is the name of the module to be published.
+* Go to https://oss.sonatype.org/#stagingRepositories and find the created repository.
+* Press Close and Release.
