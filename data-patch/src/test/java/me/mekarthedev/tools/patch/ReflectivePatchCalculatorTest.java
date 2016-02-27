@@ -34,7 +34,7 @@ public class ReflectivePatchCalculatorTest {
         Patch<TestData> patch = new ReflectivePatchCalculator<TestData>().diff(original, updated);
 
         Collection<String> changedFields = Collections2.transform(patch.changedFields(), Field::getName);
-        assertThat(changedFields, contains("v1", "v3", "v4"));
+        assertThat(changedFields, containsInAnyOrder("v1", "v3", "v4"));
     }
 
     @Test
