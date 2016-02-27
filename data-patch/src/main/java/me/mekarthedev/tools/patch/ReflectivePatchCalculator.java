@@ -6,6 +6,10 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Uses reflection to calculate change set by comparing one by one the old and the updated object fields.
+ * @param <Data> The type of data that is updated.
+ */
 public class ReflectivePatchCalculator<Data> implements PatchCalculator<Data> {
     @Override
     public Patch<Data> diff(Data original, Data updated) {

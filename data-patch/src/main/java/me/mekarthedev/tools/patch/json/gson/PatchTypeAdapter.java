@@ -20,6 +20,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A GSON implementation of Patch serializer to represent a difference between objects in json.
+ * <p>
+ *    The JSON object is interpreted as change set. Presence of a JSON key means that
+ *    the corresponding data field is changed and the updated value is the corresponding JSON value.
+ * <p>
+ *    Useful with rfc5789#section-2 compliant RESTful PATCH request.
+ * @param <Data> The type of data that is being patched.
+ * @see PatchTypeAdapterFactory
+ */
 public class PatchTypeAdapter<Data> extends TypeAdapter<Patch<Data>> {
     private final TypeAdapter<Data> _dataAdapter;
     private final Gson _gson;

@@ -1,5 +1,13 @@
 package me.mekarthedev.tools.patch;
 
+/**
+ * Allows generating Patch data in DSL-like way.
+ * <p>
+ * Example:
+ * <pre><code>
+ * MakePatch.from(oldState).to(newState).with(new ReflectivePatchCalculator())
+ * </code></pre>
+ */
 public class MakePatch {
 
     public interface CalculatorSelector<Data> {

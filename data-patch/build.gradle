@@ -1,7 +1,9 @@
 group 'me.mekarthedev.tools'
 version '0.1.0'
+description 'Allows working with difference between two states of an object in form of a patch object.'
 
 apply plugin: 'java'
+apply from: mavenPublishingRules
 
 repositories {
     mavenCentral()
